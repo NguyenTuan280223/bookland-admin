@@ -77,34 +77,61 @@ const Article = () => {
 
   const deleteArticle = async (id) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}baiviet/${id}`, {
+      const response = await fetch(`http://localhost:8181/api/baiviet/${id}`, {
         method: 'DELETE',
       });
+      
+      // Check if the response is okay (status 200)
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || 'Xóa bài viết thất bại'}`);
+        return;
+      }
+  
+      // Assuming your backend returns a success message or status
       const data = await response.json();
+      
       if (data.status === 1) {
+        // Update articles state to remove the deleted article
         setArticles(articles.filter(article => article._id !== id));
         alert('Xóa bài viết thành công');
       } else {
-        alert('Không tìm thấy bài viết để xóa');
+        alert('Xóa bài viết thất bại');
       }
     } catch (error) {
       console.error('Error deleting article:', error);
       alert('Xóa bài viết thất bại');
     }
   };
+  
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewArticle(prevArticle => ({
-      ...prevArticle,
-      [name]: value
-    }));
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      const file = files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setNewArticle(prevArticle => ({
+            ...prevArticle,
+            img: reader.result // Đường dẫn hình ảnh đã chuyển đổi
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    } else {
+      setNewArticle(prevArticle => ({
+        ...prevArticle,
+        [name]: value
+      }));
+    }
   };
+  
 
   const handleAddArticle = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL}baiviet`, {
+      const response = await fetch(`http://localhost:8181/api/baiviet/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,6 +169,13 @@ const Article = () => {
     alert('Chức năng cập nhật bài viết chưa được triển khai');
   };
 
+  const shortenUrl = (url) => {
+    return url.length > 60 ? `${url.substring(0, 60)}...` : url;
+  };
+  const shortenId = (url) => {
+    return url.length > 10 ? `${url.substring(0, 10)}...` : url;
+  };
+  
   return (
     <>
   <section className={styles.sidebar}>
@@ -261,14 +295,14 @@ const Article = () => {
                 <tbody>
                   {currentArticles.map(article => (
                     <tr key={article._id}>
-                      <td>{article._id}</td>
+                      <td>{shortenId(article._id)}</td>
                       <td><img src={article.img} alt="" style={{ maxWidth: '100px' }} /></td>
                       <td>{article.tieude}</td>
-                      <td>{article.noidung}</td>
+                      <td>{shortenUrl(article.noidung)}</td>
                       <td>{article.trangthai ? 'True' : 'False'}</td>
                       <td>
                         <button className={styles.delete} onClick={() => deleteArticle(article._id)}><MdDelete /></button>
-                        <button className={styles.edit} onClick={() => handleShowMore(article)}><FaEdit /></button>
+                        <button className={styles.edit} ><FaEdit /></button>
                         <button className={styles.details}><FaEye /></button>
                       </td>
                     </tr>
@@ -289,7 +323,7 @@ const Article = () => {
           <div className={styles.modalContent}>
             <span className={styles.close} onClick={handleCloseModal}>&times;</span>
             <h2>Chi tiết Bài Viết</h2>
-            <p>ID: {currentArticle._id}</p>
+            <p className={styles.deid}>ID: {currentArticle._id}</p>
             <p>Người Dùng: {currentArticle.nguoidung}</p>
             <p>Ảnh: <img src={currentArticle.img} alt="" style={{ maxWidth: '100px' }} /></p>
             <p>Ngày Cập Nhật: {currentArticle.ngaycapnhat}</p>
@@ -315,9 +349,10 @@ const Article = () => {
             <input type="text" id="tieude" name="tieude" value={newArticle.tieude} onChange={handleInputChange} required />
           </div>
           <div className={styles.inputWrapper}>
-            <label htmlFor="img">Ảnh</label>
-            <input type="file" id="img" name="img" value={newArticle.img} onChange={handleInputChange} required />
-          </div>
+  <label htmlFor="img">Ảnh</label>
+  <input type="file" id="img" name="img" accept="image/*" onChange={handleInputChange} required />
+</div>
+
         </div>
         <div className={`${styles.formGroup} ${styles.row2}`}>
           <div className={styles.inputWrapper}>

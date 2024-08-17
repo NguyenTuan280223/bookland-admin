@@ -390,7 +390,7 @@ const Sach = () => {
         <div className={styles.formGroup}>
           <div className={styles.inputWrapper}>
             <label>Tác giả:</label>
-            <input type="text" name="tacgia" value={newBook.tacgia} onChange={handleInputChange} required />
+            <input type="text" name="tacgia" value={newBook.tacgia} onChange={handleInputChange} />
           </div>
           <div className={styles.inputWrapper}>
             <label>NXB:</label>
@@ -437,7 +437,7 @@ const Sach = () => {
           </div>
           <div className={styles.inputWrapper}>
             <label>Thể loại sách:</label>
-            <input type="text" name="theloaisach" value={newBook.theloaisach} onChange={handleInputChange} required />
+            <input type="text" name="theloaisach" value={newBook.theloaisach} onChange={handleInputChange} />
           </div>
         </div>
 

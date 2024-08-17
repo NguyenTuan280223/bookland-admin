@@ -100,12 +100,20 @@ const Category = () => {
       alert('Đã xảy ra lỗi khi thêm thể loại sách.');
     }
   };
+  
   const handleDelete = async (id) => {
     try {
       const response = await fetch(`http://localhost:8181/api/theloai/${id}`, {
         method: 'DELETE',
       });
-      const data = await response.json();
+  
+      // Kiểm tra mã trạng thái
+      if (!response.ok) {
+        const errorData = await response.json(); // Cố gắng phân tích lỗi nếu có
+        throw new Error(errorData.message || 'Đã xảy ra lỗi khi xóa thể loại.');
+      }
+  
+      const data = await response.json(); // Chỉ phân tích cú pháp JSON khi request thành công
       if (data.status === 1) {
         setCategories(categories.filter(category => category._id !== id));
       } else {
@@ -116,6 +124,7 @@ const Category = () => {
       alert('Đã xảy ra lỗi khi xóa thể loại sách.');
     }
   };
+  
   
   
   

@@ -193,7 +193,8 @@ const handleDeleteUser = async (id) => {
         },
         body: JSON.stringify(newUser),
       });
-  
+      const text = await response.text(); // Lấy phản hồi dưới dạng văn bản
+      console.log(text); // Ghi log nội dung phản hồi
       const data = await response.json();
   
       if (data.status === 1) {

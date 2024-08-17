@@ -544,3 +544,12 @@ button.delete, button.edit, button.details{
     cursor: pointer;
     color: #aaa;
 }
+
+
+
+.deid{
+	max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

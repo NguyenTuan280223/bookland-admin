@@ -30,21 +30,26 @@ const Banner = () => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await fetch('http://localhost:8181/api/banner/'); 
+        const response = await fetch('http://localhost:8181/api/banner/');
         const data = await response.json();
-        setBanners(data);
-        console.log(data);
+  
+        console.log('Dữ liệu từ API:', data);
+  
+        if (Array.isArray(data.data)) {
+          setBanners(data.data);
+        } else {
+          console.error('Dữ liệu không phải là một mảng:', data);
+        }
       } catch (error) {
         console.error('Lỗi khi lấy dữ liệu từ banner:', error);
       }
     };
     fetchBanners();
   }, []);
-
+  
   const indexOfLastBanner = currentPage * bannersPerPage;
   const indexOfFirstBanner = indexOfLastBanner - bannersPerPage;
   const currentBanners = banners.slice(indexOfFirstBanner, indexOfLastBanner);
-
   const totalPages = Math.ceil(banners.length / bannersPerPage);
 
   const handleNextPage = () => {
@@ -68,36 +73,72 @@ const Banner = () => {
   const handleShowAddModal = () => {
     setShowModalAdd(true);
   };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, files } = e.target;
+
+    if (type === 'file') {
+      const file = files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setNewBanner(prevState => ({
+            ...prevState,
+            [name]: reader.result // Lưu URL của ảnh vào trạng thái
+          }));
+        };
+        reader.readAsDataURL(file); // Đọc tệp ảnh và tạo URL
+      }
+    } else {
+      setNewBanner(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
+  };
   const handleAddBanner = async (e) => {
     e.preventDefault();
+  
     try {
-      const response = await fetch(`http://localhost:8181/api/banner/`,{
+      const response = await fetch(`http://localhost:8181/api/banner/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newBanner),
       });
+  
+      // Kiểm tra nếu phản hồi không thành công
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.message || "Đã xảy ra lỗi khi thêm banner");
+        return;
+      }
+  
       const data = await response.json();
-      if (data.status === 1) {
+  
+      if (data.success) {
         alert(data.message);
-        setBanners([...banners, newBanner]);
+        // Thêm banner mới vào danh sách
+        setBanners((prevBanners) => [...prevBanners, data.data]); 
       } else {
         alert(data.message);
       }
     } catch (error) {
-      console.error('Lỗi khi thêm:', error);
+      console.error('Lỗi khi thêm banner:', error);
+      alert("Đã xảy ra lỗi khi thêm banner");
     }
+  
+    // Reset form về trạng thái ban đầu
     setNewBanner({
-      id_banner: '',
       url: '',
-      img: '',
-      luotclick: 0,
+      image: '',
       ngaybatdau: '',
       ngayketthuc: '',
       uutien: 0,
       hien_thi: true,
     });
+  
     setShowModalAdd(false);
   };
   
@@ -105,7 +146,6 @@ const Banner = () => {
   const shortenUrl = (url) => {
     return url.length > 10 ? `${url.substring(0, 10)}...` : url;
   };
-
 
   const handleDeleteBanner = async (id) => {
     try {
@@ -115,14 +155,12 @@ const Banner = () => {
       const data = await response.json();
       if (data.message) {
         alert(data.message);
-        // Cập nhật danh sách banner sau khi xóa
         setBanners(banners.filter(banner => banner._id !== id));
       }
     } catch (error) {
       console.error('Lỗi khi xóa banner:', error);
     }
   };
-  
 
   return (
     <>
@@ -232,7 +270,7 @@ const Banner = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Id</th>
+                    <th>ID</th>
                     <th>Ảnh</th>
                     <th>URL</th>
                     <th>Lượt Click</th>
@@ -257,7 +295,7 @@ const Banner = () => {
                       <td>
                         <button className={styles.delete} onClick={() => handleDeleteBanner(banner._id)}><MdDelete /></button>
                         <button className={styles.edit} onClick={() => handleShowMore(banner)}><FaEdit /></button>
-                        <button className={styles.details} ><FaEye /></button>
+                        <button className={styles.details}><FaEye /></button>
                       </td>
                     </tr>
                   ))}
@@ -277,7 +315,7 @@ const Banner = () => {
           <div className={styles.modalContent}>
             <span className={styles.close} onClick={handleCloseModal}>&times;</span>
             <h2>Chi tiết Banner</h2>
-            <p >Id: {currentBanner.id_banner}</p>
+            <p>Id: {currentBanner.id_banner}</p>
             <p>URL: {currentBanner.url}</p>
             <p>Lượt Click: {currentBanner.luotclick}</p>
             <p>Ngày Bắt Đầu: {currentBanner.ngaybatdau}</p>
@@ -289,78 +327,86 @@ const Banner = () => {
       )}
 
       {showModalAdd && (
-  <div className={styles.modal}>
-    <div className={styles.modalContent}>
-      <span className={styles.close} onClick={() => setShowModalAdd(false)}>&times;</span>
-      <h2>Thêm Banner Mới</h2>
-      <form onSubmit={handleAddBanner}>
-        <label htmlFor="url">URL:</label>
-        <input
-          type="text"
-          id="url"
-          value={newBanner.url}
-          onChange={(e) => setNewBanner({ ...newBanner, url: e.target.value })}
-          required
-        />
-        
-        <label htmlFor="img">Ảnh:</label>
-        <input
-          type="file"
-          id="img"
-          onChange={(e) => setNewBanner({ ...newBanner, img: e.target.files[0] })}
-          required
-        />
-        
-        <label htmlFor="luotclick">Lượt Click:</label>
-        <input
-          type="number"
-          id="luotclick"
-          value={newBanner.luotclick}
-          onChange={(e) => setNewBanner({ ...newBanner, luotclick: +e.target.value })}
-          required
-        />
-        
-        <label htmlFor="ngaybatdau">Ngày Bắt Đầu:</label>
-        <input
-          type="date"
-          id="ngaybatdau"
-          value={newBanner.ngaybatdau}
-          onChange={(e) => setNewBanner({ ...newBanner, ngaybatdau: e.target.value })}
-        />
-        
-        <label htmlFor="ngayketthuc">Ngày Kết Thúc:</label>
-        <input
-          type="date"
-          id="ngayketthuc"
-          value={newBanner.ngayketthuc}
-          onChange={(e) => setNewBanner({ ...newBanner, ngayketthuc: e.target.value })}
-        />
-        
-        <label className={styles.uutien} htmlFor="uutien">Ưu Tiên:</label>
-        <input
-          type="number"
-          id="uutien"
-          value={newBanner.uutien}
-          onChange={(e) => setNewBanner({ ...newBanner, uutien: +e.target.value })}
-          required
-        />
-        
-        <label htmlFor="hien_thi">Hiển Thị:</label>
-        <select
-          id="hien_thi"
-          value={newBanner.hien_thi ? 'true' : 'false'}
-          onChange={(e) => setNewBanner({ ...newBanner, hien_thi: e.target.value === 'true' })}
-        >
-          <option value="true">True</option>
-          <option value="false">False</option>
-        </select>
-        
-        <button type="submit">Thêm</button>
-      </form>
-    </div>
-  </div>
-)}
-
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <span className={styles.close} onClick={() => setShowModalAdd(false)}>&times;</span>
+            <h2>Thêm Banner</h2>
+            <form onSubmit={handleAddBanner}>
+              <div>
+                <label htmlFor="url">URL</label>
+                <input
+                  type="text"
+                  name="url"
+                  value={newBanner.url}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="img">Hình Ảnh</label>
+                <input
+                  type="file"
+                  name="img"
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="luotclick">Lượt Click</label>
+                <input
+                  type="number"
+                  name="luotclick"
+                  value={newBanner.luotclick}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="ngaybatdau">Ngày Bắt Đầu</label>
+                <input
+                  type="date"
+                  name="ngaybatdau"
+                  value={newBanner.ngaybatdau}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="ngayketthuc">Ngày Kết Thúc</label>
+                <input
+                  type="date"
+                  name="ngayketthuc"
+                  value={newBanner.ngayketthuc}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="uutien">Ưu Tiên</label>
+                <input
+                  type="number"
+                  name="uutien"
+                  value={newBanner.uutien}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="hien_thi">Hiển Thị</label>
+                <select
+                  name="hien_thi"
+                  value={newBanner.hien_thi ? 'True' : 'False'}
+                  onChange={handleInputChange}
+                >
+                  <option value="True">True</option>
+                  <option value="False">False</option>
+                </select>
+              </div>
+              <button type="submit">Thêm</button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };
