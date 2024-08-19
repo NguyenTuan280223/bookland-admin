@@ -592,7 +592,7 @@ button.delete, button.edit,button.details {
 
 .motaa{
 	display: block;
-	max-width:383px;
+	max-width:450px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -645,4 +645,13 @@ button.delete, button.edit,button.details {
     font-size: 24px;
     cursor: pointer;
     color: #aaa;
+}
+
+
+.tenb{
+	display: block;
+	max-width:330px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

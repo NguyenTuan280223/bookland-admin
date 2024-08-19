@@ -100,28 +100,38 @@ const Category = () => {
       alert('Đã xảy ra lỗi khi thêm thể loại sách.');
     }
   };
-  
   const handleDelete = async (id) => {
+    // Hiển thị hộp thoại xác nhận trước khi xóa
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa thể loại này không?');
+  
+    if (!confirmed) {
+      // Nếu người dùng không xác nhận, thoát hàm
+      return;
+    }
+  
     try {
       const response = await fetch(`http://localhost:8181/api/theloai/${id}`, {
         method: 'DELETE',
       });
   
-      // Kiểm tra mã trạng thái
       if (!response.ok) {
-        const errorData = await response.json(); // Cố gắng phân tích lỗi nếu có
+        // Nếu phản hồi không thành công, lấy thông tin lỗi
+        const errorData = await response.json();
         throw new Error(errorData.message || 'Đã xảy ra lỗi khi xóa thể loại.');
       }
   
-      const data = await response.json(); // Chỉ phân tích cú pháp JSON khi request thành công
+      const data = await response.json();
+  
       if (data.status === 1) {
-        setCategories(categories.filter(category => category._id !== id));
+        // Cập nhật danh sách thể loại để loại bỏ thể loại đã xóa
+        setCategories(prevCategories => prevCategories.filter(category => category._id !== id));
+        alert('Xóa thể loại thành công');
       } else {
-        alert(data.message);
+        alert(data.message || 'Xóa thể loại không thành công');
       }
     } catch (error) {
       console.error('Lỗi khi xóa thể loại:', error);
-      alert('Đã xảy ra lỗi khi xóa thể loại sách.');
+      alert('Đã xảy ra lỗi khi xóa thể loại. Vui lòng thử lại.');
     }
   };
   
@@ -306,7 +316,7 @@ const Category = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>Stt</th>
                     <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Hiển Thị</th>
@@ -314,9 +324,9 @@ const Category = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentCategories.map(category => (
-                    <tr key={category._id}>
-                      <td className={styles.deid}>{category._id}</td>
+                {currentCategories.map((category, index) => (
+      <tr key={category.id_theloai}>
+        <td>{index + 1}</td>
                       <td><img src={category.img} alt="" /></td>
                       <td>{category.ten}</td>
                       <td>{category.hienthi ? 'True' : 'False'}</td>

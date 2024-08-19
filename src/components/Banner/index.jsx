@@ -148,19 +148,41 @@ const Banner = () => {
   };
 
   const handleDeleteBanner = async (id) => {
+    // Hiển thị hộp thoại xác nhận trước khi xóa
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa banner này không?');
+  
+    if (!confirmed) {
+      // Nếu người dùng không xác nhận, thoát hàm
+      return;
+    }
+  
     try {
       const response = await fetch(`http://localhost:8181/api/banner/${id}`, {
         method: 'DELETE',
       });
+  
+      if (!response.ok) {
+        // Nếu phản hồi không thành công, lấy thông tin lỗi
+        const errorData = await response.json();
+        alert(`Lỗi: ${errorData.message || 'Xóa banner thất bại'}`);
+        return;
+      }
+  
       const data = await response.json();
+  
       if (data.message) {
         alert(data.message);
-        setBanners(banners.filter(banner => banner._id !== id));
+        // Cập nhật trạng thái banner để loại bỏ banner đã xóa
+        setBanners(prevBanners => prevBanners.filter(banner => banner._id !== id));
+      } else {
+        alert('Xóa banner thất bại');
       }
     } catch (error) {
       console.error('Lỗi khi xóa banner:', error);
+      alert('Có lỗi xảy ra khi xóa banner');
     }
   };
+  
 
   return (
     <>
@@ -270,7 +292,7 @@ const Banner = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>Stt</th>
                     <th>Ảnh</th>
                     <th>URL</th>
                     <th>Lượt Click</th>
@@ -282,9 +304,9 @@ const Banner = () => {
                   </tr>
                 </thead>
                 <tbody id="banner-table-body">
-                  {currentBanners.map(banner => (
-                    <tr key={banner._id}>
-                      <td className={styles.deid}>{banner._id}</td>
+                {currentBanners.map((banner, index) => (
+    <tr key={banner._id}>
+      <td className={styles.deid}>{indexOfFirstBanner + index + 1}</td>
                       <td><img src={banner.img} alt="" /></td>
                       <td>{shortenUrl(banner.url)}</td>
                       <td>{banner.luotclick}</td>

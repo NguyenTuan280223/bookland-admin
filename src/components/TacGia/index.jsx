@@ -116,22 +116,42 @@ const TacGia = () => {
       console.error("Lỗi khi thêm tác giả:", error);
     }
   };
-
   const handleDeleteAuthor = async (id) => {
+    // Hiển thị hộp thoại xác nhận trước khi xóa
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa tác giả này không?');
+  
+    if (!confirmed) {
+      // Nếu người dùng không xác nhận, thoát hàm
+      return;
+    }
+  
     try {
       const response = await fetch(`http://localhost:8181/api/tacgia/${id}`, {
         method: 'DELETE',
       });
+  
+      if (!response.ok) {
+        // Nếu phản hồi không thành công, lấy thông tin lỗi
+        const errorData = await response.json();
+        alert(`Lỗi: ${errorData.message || 'Xóa tác giả thất bại'}`);
+        return;
+      }
+  
       const data = await response.json();
+  
       if (data.success) {
+        // Cập nhật trạng thái tác giả để loại bỏ tác giả đã xóa
         setAuthors(prevAuthors => prevAuthors.filter(author => author._id !== id));
+        alert('Xóa tác giả thành công');
       } else {
-        console.error('Xóa tác giả thấy bại:', data.message);
+        alert('Xóa tác giả thất bại');
       }
     } catch (error) {
       console.error('Lỗi khi xóa tác giả:', error);
+      alert('Có lỗi xảy ra khi xóa tác giả');
     }
   };
+  
 
   const handleDetailsClick = (author) => {
     setCurrentAuthor(author);
@@ -303,7 +323,7 @@ const TacGia = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Id</th>
+                    <th>Stt</th>
                     <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Tiểu Sử</th>
@@ -312,9 +332,9 @@ const TacGia = () => {
                   </tr>
                 </thead>
                 <tbody id="author-table-body">
-                  {currentAuthors.map(author => (
+                  {currentAuthors.map((author,index) => (
                     <tr key={author._id}>
-                      <td className={styles.deid}>{author._id}</td>
+                      <td className={styles.deid}>{indexOfFirstAuthor + index + 1}</td>
                       <td><img src={author.img} alt="" /></td>
                       <td>{author.ten}</td>
                       <td className={styles.tieusutd}>{author.tieusu}</td>

@@ -147,18 +147,26 @@ const Admin = () => {
   
 
   const handleDeleteUser = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:8181/api/admin/${id}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-      if (data.status) {
-        setUsers(users.filter(user => user._id !== id));
-      } else {
-        console.error("Failed to delete user:", data.message);
+    const confirmed = window.confirm("Bạn có chắc chắn muốn xóa người dùng này không?");
+    
+    if (confirmed) {
+      try {
+        const response = await fetch(`http://localhost:8181/api/admin/${id}`, {
+          method: 'DELETE',
+        });
+        const data = await response.json();
+        
+        if (data.status) {
+          setUsers(users.filter(user => user._id !== id));
+          console.log("Người dùng đã được xóa thành công.");
+        } else {
+          console.error("Failed to delete user:", data.message);
+        }
+      } catch (error) {
+        console.error("Error deleting user:", error);
       }
-    } catch (error) {
-      console.error("Error deleting user:", error);
+    } else {
+      console.log("Hủy thao tác xóa người dùng.");
     }
   };
   
@@ -310,7 +318,7 @@ const Admin = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Id</th>
+                    <th>Stt</th>
                     <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Loại Tài Khoản</th>
@@ -322,9 +330,9 @@ const Admin = () => {
                   </tr>
                 </thead>
                 <tbody id="user-table-body">
-  {currentUsers.map(user => (
-    <tr key={user._id}> {/* Thêm thuộc tính key ở đây */}
-      <td className={styles.deid}>{user._id}</td>
+  {currentUsers.map((user,index) => (
+    <tr key={user._id}> 
+      <td className={styles.deid}>{index + 1 + (currentPage - 1) * usersPerPage}</td>
       <td><img src={user.avt} alt="" /></td>
       <td className={styles.deten}>{user.ten}</td>
       <td>{user.loaitaikhoan === 0 ?  'User' : 'Admin' }</td>

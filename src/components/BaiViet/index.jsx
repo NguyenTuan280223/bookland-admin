@@ -75,34 +75,41 @@ const Article = () => {
     setCurrentArticle(null);
   };
 
-  const deleteArticle = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:8181/api/baiviet/${id}`, {
-        method: 'DELETE',
-      });
-      
-      // Check if the response is okay (status 200)
-      if (!response.ok) {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.message || 'Xóa bài viết thất bại'}`);
-        return;
-      }
-  
-      // Assuming your backend returns a success message or status
-      const data = await response.json();
-      
-      if (data.status === 1) {
-        // Update articles state to remove the deleted article
-        setArticles(articles.filter(article => article._id !== id));
-        alert('Xóa bài viết thành công');
-      } else {
-        alert('Xóa bài viết thất bại');
-      }
-    } catch (error) {
-      console.error('Error deleting article:', error);
+ const deleteArticle = async (id) => {
+  // Hiển thị hộp thoại xác nhận trước khi xóa
+  const confirmed = window.confirm('Bạn có chắc chắn muốn xóa bài viết này không?');
+
+  if (!confirmed) {
+    // Nếu người dùng không xác nhận, thoát hàm
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:8181/api/baiviet/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      alert(`Lỗi: ${errorData.message || 'Xóa bài viết thất bại'}`);
+      return;
+    }
+
+    const data = await response.json();
+
+    if (data.status === 1) {
+      // Cập nhật trạng thái bài viết để loại bỏ bài viết đã xóa
+      setArticles(articles.filter(article => article._id !== id));
+      alert('Xóa bài viết thành công');
+    } else {
       alert('Xóa bài viết thất bại');
     }
-  };
+  } catch (error) {
+    console.error('Lỗi khi xóa bài viết:', error);
+    alert('Có lỗi xảy ra khi xóa bài viết');
+  }
+};
+
   
 
   const handleInputChange = (e) => {
@@ -293,9 +300,9 @@ const Article = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentArticles.map(article => (
-                    <tr key={article._id}>
-                      <td>{shortenId(article._id)}</td>
+                {currentArticles.map((article, index) => (
+    <tr key={article._id}>
+      <td>{index + 1 + (currentPage - 1) * articlesPerPage}</td>
                       <td><img src={article.img} alt="" style={{ maxWidth: '100px' }} /></td>
                       <td>{article.tieude}</td>
                       <td>{shortenUrl(article.noidung)}</td>

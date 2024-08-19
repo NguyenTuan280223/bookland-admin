@@ -150,37 +150,31 @@ const NguoiDung = () => {
   
 
 const handleDeleteUser = async (id) => {
-  try {
-    const response = await fetch(`http://localhost:8181/api/nguoidung/${id}`, {
-      method: 'DELETE',
-    });
-    const data = await response.json();
-    if (data.status) {
-      setUsers(users.filter(user => user._id !== id));
-    } else {
-      console.error("Thất bại khi lấy người dùng:", data.message);
+  const confirmed = window.confirm("Bạn có chắc chắn muốn xóa người dùng này không?");
+  
+  if (confirmed) {
+    try {
+      const response = await fetch(`http://localhost:8181/api/nguoidung/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      
+      if (data.status) {
+        setUsers(users.filter(user => user._id !== id));
+        console.log("Người dùng đã được xóa thành công.");
+      } else {
+        console.error("Thất bại khi xóa người dùng:", data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
     }
-  } catch (error) {
-    console.error("Error deleting user:", error);
+  } else {
+    console.log("Hủy thao tác xóa người dùng.");
   }
 };
 
 
 
-
-  // const fetchUserById = async (id) => {
-  //   try {
-  //     const response = await fetch(`${process.env.REACT_APP_URL}nguoidung/${id}`);
-  //     const data = await response.json();
-  //     if (data.success) {
-  //       setCurrentUser(data.data);
-  //     } else {
-  //       console.error("Failed to fetch user:", data.message);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching user:", error);
-  //   }
-  // };
 
 
   const handleUpdateUser = async (e) => {
@@ -326,7 +320,7 @@ const handleDeleteUser = async (id) => {
               <table>
                 <thead>
                   <tr>
-                    <th>Id</th>
+                    <th>Stt</th>
                     <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Loại Tài Khoản</th>
@@ -338,9 +332,9 @@ const handleDeleteUser = async (id) => {
                   </tr>
                 </thead>
                 <tbody id="user-table-body">
-  {currentUsers.map(user => (
+  {currentUsers.map((user,index) => (
     <tr key={user._id}> 
-      <td className={styles.deid}>{user._id}</td>
+      <td className={styles.deid}>{index + 1 + (currentPage - 1) * usersPerPage}</td>
       <td><img src={user.avt} alt="" /></td>
       <td className={styles.deten}>{user.ten}</td>
       <td>{user.loaitaikhoan === 0 ?  'User' : 'Admin' }</td>

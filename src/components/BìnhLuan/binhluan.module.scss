@@ -561,3 +561,11 @@ button.delete, button.edit, button.details{
 	cursor: pointer;
 	color: #aaa;
   }
+
+
+  .noidung{
+	max-width: 390px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }

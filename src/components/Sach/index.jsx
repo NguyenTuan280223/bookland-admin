@@ -127,10 +127,10 @@ const Sach = () => {
         reader.onloadend = () => {
           setNewBook(prevState => ({
             ...prevState,
-            [name]: reader.result // Lưu URL của ảnh vào trạng thái
+            [name]: reader.result 
           }));
         };
-        reader.readAsDataURL(file); // Đọc tệp ảnh và tạo URL
+        reader.readAsDataURL(file); 
       }
     } else {
       setNewBook(prevState => ({
@@ -168,16 +168,32 @@ const Sach = () => {
       alert('Có lỗi xảy ra, vui lòng thử lại.');
     }
   };
-  
   const handleDeleteBook = async (id) => {
+    // Hiển thị hộp thoại xác nhận trước khi xóa
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa sách này không?');
+  
+    if (!confirmed) {
+      // Nếu người dùng không xác nhận, thoát hàm
+      return;
+    }
+  
     try {
       const response = await fetch(`http://localhost:8181/api/sach/${id}`, {
         method: 'DELETE',
       });
+  
+      if (!response.ok) {
+        // Nếu phản hồi không thành công, lấy thông tin lỗi
+        const errorData = await response.json();
+        alert(`Lỗi: ${errorData.message || 'Xóa sách không thành công'}`);
+        return;
+      }
+  
       const data = await response.json();
+  
       if (data.status === 1) {
         // Xóa sách khỏi danh sách trên frontend
-        setBooks(books.filter(book => book._id !== id));
+        setBooks(prevBooks => prevBooks.filter(book => book._id !== id));
         alert('Xóa sách thành công');
       } else {
         alert(data.message || 'Xóa sách không thành công');
@@ -187,6 +203,7 @@ const Sach = () => {
       alert('Có lỗi xảy ra, vui lòng thử lại.');
     }
   };
+  
 
   const handleEditBookClick = (book) => {
     setNewBook(book);
@@ -222,7 +239,7 @@ const Sach = () => {
 
   return (
     <>
-         <section className={styles.sidebar}>
+      <section className={styles.sidebar}>
         <a href="#" className={styles.brand}>
           <i className={styles.bx}></i>
           <span className={styles.text}>AdminHub</span>
@@ -329,7 +346,7 @@ const Sach = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Id</th>
+                    <th>Stt</th>
                     <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Giá</th>
@@ -340,9 +357,9 @@ const Sach = () => {
                   </tr>
                 </thead>
                 <tbody id="book-table-body">
-                  {currentBooks.map(book => (
-                    <tr key={book._id}>
-                      <td className={styles.deid}>{book._id}</td>
+                {currentBooks.map((book, index) => (
+           <tr key={book._id}>
+                   <td>{indexOfFirstBook + index + 1}</td> {/* Hiển thị số thứ tự */}
                       <td><img src={book.img}  /></td>
                       <td className={styles.tenb}>{book.ten}</td>
                       <td>{book.gia}</td>
@@ -380,11 +397,9 @@ const Sach = () => {
             <input type="text" name="ten" value={newBook.ten} onChange={handleInputChange} required />
           </div>
           <div className={styles.inputWrapper}>
-  <label>Ảnh:</label>
-  <input type="file" name="img" onChange={handleInputChange}  />
-</div>
-
-        
+         <label>Ảnh:</label>
+       <input type="file" name="img" onChange={handleInputChange}  />
+   </div>
         </div>
 
         <div className={styles.formGroup}>

@@ -58,23 +58,7 @@ const DonHang = () => {
     setCurrentOrder(null);
   };
 
-  // const handleDeleteOrder = async (orderId) => {
-  //   try {
-  //     const response = await fetch(`${process.env.REACT_APP_URL}donhang/${orderId}`, {
-  //       method: 'DELETE',
-  //     });
-      
-  //     if (!response.ok) {
-  //       throw new Error('Lỗi khi xóa đơn hàng');
-  //     }
-      
-  //     setOrders(orders.filter(order => order._id !== orderId));
-  //     alert('Xóa đơn hàng thành công');
-  //   } catch (error) {
-  //     console.error('Lỗi khi xóa đơn hàng:', error);
-  //     alert('Lỗi khi xóa đơn hàng');
-  //   }
-  // };
+
   
 
   return (
@@ -181,7 +165,7 @@ const DonHang = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>ID đơn hàng</th>
+                    <th>Stt</th>
                     <th>Người dùng</th>
                     <th>Địa chỉ</th>
                     <th>Số điện thoại</th>
@@ -194,9 +178,9 @@ const DonHang = () => {
                   </tr>
                 </thead>
                 <tbody id="order-table-body">
-                  {currentOrders.map(order => (
-                    <tr key={order._id}>
-                      <td className={styles.deid}>{order._id}</td>
+                {currentOrders.map((order, index) => (
+    <tr key={order._id}>
+      <td className={styles.deid}>{indexOfFirstOrder + index + 1}</td>
                       <td className={styles.deid}>{order?.id_nguoidung}</td>
                       <td className={styles.deid}> {order.diachi}</td>
                       <td>{order.sdt}</td>
